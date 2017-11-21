@@ -103,6 +103,10 @@ public class ChunkInputStream extends InputStream {
         return initialChunk.getFileName();
     }
 
+    public String getContentType() {
+        return initialChunk.getContentType();
+    }
+
     public String getRequestFormField(String fieldName){
         return initialChunk.getRequestFormField(fieldName);
     }

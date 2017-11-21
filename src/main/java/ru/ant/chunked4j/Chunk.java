@@ -26,6 +26,7 @@ public class Chunk implements Comparable<Chunk> {
     private BigInteger totalChunkCount;
     private byte[] chunkData;
     private String fileName;
+    private String contentType;
     private boolean processed;
 
     private Map<String, String> requestFormFields = new HashMap<>();
@@ -51,6 +52,7 @@ public class Chunk implements Comparable<Chunk> {
                 if(!fieldName.equals("file"))
                     throw new RuntimeException("File content in field named \""+fieldName+"\" was ignored. Content field name must be \"file\"");
                 fileName = item.getName();
+                contentType = item.getContentType();
                 chunkData = IOUtils.toByteArray(stream);
             }
         }
@@ -74,6 +76,10 @@ public class Chunk implements Comparable<Chunk> {
 
     String getFileName() {
         return fileName;
+    }
+
+    String getContentType() {
+        return contentType;
     }
 
     byte[] getChunkData() {
