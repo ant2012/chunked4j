@@ -46,7 +46,7 @@ public class ChunkInputStream extends InputStream {
                 availableChunkIndex = currentChunk.getChunkIndex().longValue();
             if(availableChunkIndex!=nextChunkIndex){
                 try {
-                    log.warn("Queue peek timeout");
+                    log.debug("Queue peek timeout");
                     Thread.sleep(QUEUE_PEEK_TIMEOUT);
                 } catch (InterruptedException e) {
                     log.error(e);
@@ -84,7 +84,7 @@ public class ChunkInputStream extends InputStream {
 
         while((queue.size() + 1) * initialChunk.getChunkSize().intValue() > QUEUE_MAX_CAPACITY){
             try {
-                log.warn("Queue put timeout");
+                log.debug("Queue put timeout");
                 Thread.sleep(QUEUE_PUT_TIMEOUT);
             } catch (InterruptedException e) {
                 log.error(e);
@@ -92,7 +92,7 @@ public class ChunkInputStream extends InputStream {
         }
         queue.put(chunk);
         acceptedChunkCount++;
-        log.info(String.format("Received %1$.2f%% of %2$s", (double)acceptedChunkCount/chunk.getTotalChunkCount().longValue()*100, getFileName()));
+        log.debug(String.format("Received %1$.2f%% of %2$s", (double)acceptedChunkCount/chunk.getTotalChunkCount().longValue()*100, getFileName()));
         if(acceptedChunkCount == initialChunk.getTotalChunkCount().longValue()){
             allChunksAccepted = true;
             log.info("All chunks received");
@@ -109,6 +109,14 @@ public class ChunkInputStream extends InputStream {
 
     public String getRequestFormField(String fieldName){
         return initialChunk.getRequestFormField(fieldName);
+    }
+
+    public String getRequestQueryParam(String paramName){
+        return initialChunk.getRequestQueryParam(paramName);
+    }
+
+    public Object getRequestAttribute(String attributeName){
+        return initialChunk.getRequestAttribute(attributeName);
     }
 
     String getFileId() {

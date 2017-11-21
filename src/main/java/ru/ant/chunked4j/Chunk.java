@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +30,9 @@ public class Chunk implements Comparable<Chunk> {
     private String contentType;
     private boolean processed;
 
-    private Map<String, String> requestFormFields = new HashMap<>();
+    private final Map<String, String> requestFormFields = new HashMap<>();
+    private final Map<String, String[]> requestQueryParams;
+    private final Map<String, Object> requestAttributes = new HashMap<>();
 
     Chunk(HttpServletRequest request) throws IOException, FileUploadException {
         boolean isMultipart = ServletFileUpload.isMultipartContent(request);
@@ -37,6 +40,8 @@ public class Chunk implements Comparable<Chunk> {
             throw new RuntimeException("Multipart data expected");
 
         request.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        requestQueryParams = request.getParameterMap();
+        parseRequestAttributes(request);
         ServletFileUpload upload = new ServletFileUpload();
 
         FileItemIterator iter = upload.getItemIterator(request);
@@ -55,6 +60,15 @@ public class Chunk implements Comparable<Chunk> {
                 contentType = item.getContentType();
                 chunkData = IOUtils.toByteArray(stream);
             }
+        }
+    }
+
+    private void parseRequestAttributes(HttpServletRequest request) {
+        Enumeration<String> attributeNames = request.getAttributeNames();
+        while (attributeNames.hasMoreElements()){
+            String attributeName = attributeNames.nextElement();
+            Object value = request.getAttribute(attributeName);
+            requestAttributes.put(attributeName, value);
         }
     }
 
@@ -112,12 +126,27 @@ public class Chunk implements Comparable<Chunk> {
 //                dzChunkByteOffset = new BigInteger(value);
 //                break;
             default:
-                log.debug(String.format("Form field [%1$s=%2$s] ignored by %3$s", fieldName, value, getClass().getSimpleName()));
+//                log.debug(String.format("Form field [%1$s=%2$s] ignored by %3$s", fieldName, value, getClass().getSimpleName()));
+                break;
         }
     }
 
     public String getRequestFormField(String fieldName){
         return requestFormFields.get(fieldName);
+    }
+
+    public String getRequestQueryParam(String paramName){
+        return getRequestQueryParam(paramName, 0);
+    }
+
+    public Object getRequestAttribute(String attributeName){
+        return requestAttributes.get(attributeName);
+    }
+
+    private String getRequestQueryParam(String paramName, int index){
+        String[] arr = requestQueryParams.get(paramName);
+        if(arr == null || arr.length <= index) return null;
+        return arr[index];
     }
 
     @Override
