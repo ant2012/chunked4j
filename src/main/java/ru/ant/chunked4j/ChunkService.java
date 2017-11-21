@@ -33,7 +33,7 @@ public class ChunkService {
         }
     }
 
-    private ChunkInputStream getStream(Chunk chunk) throws IOException, ChunkException {
+    private synchronized ChunkInputStream getStream(Chunk chunk) throws IOException, ChunkException {
         ChunkInputStream stream = streamMap.get(chunk.getFileId());
         if(stream != null) return stream;
 
