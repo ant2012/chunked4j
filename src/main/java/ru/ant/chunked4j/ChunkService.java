@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,17 +23,13 @@ public class ChunkService {
     private Map<String, ChunkInputStream> streamMap = new HashMap<>();
     private List<ChunkStreamListener> listeners = new ArrayList<>();
 
-    public void putChunk(HttpServletRequest request) throws ChunkException {
-        try {
-            Chunk chunk = new Chunk(request);
-            ChunkInputStream stream = getStream(chunk);
-            stream.putChunk(chunk);
-        } catch (Exception e) {
-            throw new ChunkException(e);
-        }
+    public void putChunk(HttpServletRequest request) throws Exception {
+        Chunk chunk = new Chunk(request);
+        ChunkInputStream stream = getStream(chunk);
+        stream.putChunk(chunk);
     }
 
-    private synchronized ChunkInputStream getStream(Chunk chunk) throws IOException, ChunkException {
+    private synchronized ChunkInputStream getStream(Chunk chunk) throws Exception {
         ChunkInputStream stream = streamMap.get(chunk.getFileId());
         if(stream != null) return stream;
 
@@ -44,7 +39,7 @@ public class ChunkService {
         return stream;
     }
 
-    private void notifyNewStreamAppeared(ChunkInputStream stream) throws ChunkException {
+    private void notifyNewStreamAppeared(ChunkInputStream stream) throws Exception {
         for (ChunkStreamListener listener : listeners) {
             listener.newStreamAppeared(stream);
         }

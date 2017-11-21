@@ -13,7 +13,7 @@ public class ChunkStreamListener<S extends Serializable, R extends ChunkStreamRe
         this.readerFactory = readerFactory;
     }
 
-    void newStreamAppeared(ChunkInputStream stream) throws ChunkException {
+    void newStreamAppeared(ChunkInputStream stream) throws Exception {
         R reader = readerFactory.create(stream);
         readers.put(stream.getFileId(), reader);
         new Thread(reader, String.format("%1$s-async{%2$s}", getClass().getSimpleName(), stream.getFileName())).start();
