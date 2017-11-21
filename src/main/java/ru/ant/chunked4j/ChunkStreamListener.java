@@ -1,9 +1,10 @@
 package ru.ant.chunked4j;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChunkStreamListener<R extends ChunkStreamReader, F extends ChunkStreamReaderFactory<R>> {
+public class ChunkStreamListener<S extends Serializable, R extends ChunkStreamReader<S>, F extends ChunkStreamReaderFactory<R>> {
 
     private final F readerFactory;
     private final Map<String, R> readers = new HashMap<>();
@@ -23,7 +24,7 @@ public class ChunkStreamListener<R extends ChunkStreamReader, F extends ChunkStr
         return String.format("%1$s<%2$s>", getClass().getSimpleName(), readerFactory.getClass().getSimpleName());
     }
 
-    ChunkUploadResult getUploadResult(String fileId) {
+    S getUploadResult(String fileId) {
         R reader = readers.get(fileId);
         return reader.getResult();
     }

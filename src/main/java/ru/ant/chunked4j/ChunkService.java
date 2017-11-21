@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,9 +60,9 @@ public class ChunkService {
         addStreamListener(new ChunkStreamListener<>(streamReaderFactory));
     }
 
-    public ChunkUploadResult getUploadResult(String fileId) {
+    public Serializable getUploadResult(String fileId) {
         for (ChunkStreamListener listener : listeners) {
-            ChunkUploadResult result = listener.getUploadResult(fileId);
+            Serializable result = listener.getUploadResult(fileId);
             if(result != null) return result;
         }
         return null;

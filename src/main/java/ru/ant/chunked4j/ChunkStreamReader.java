@@ -9,5 +9,5 @@ public abstract class ChunkStreamReader<R extends Serializable> implements Runna
         this.stream = stream;
     }
 
-    public abstract ChunkUploadResult<R> getResult();
+    public abstract R getResult();
 }
