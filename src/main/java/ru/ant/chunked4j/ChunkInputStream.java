@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public class ChunkInputStream extends InputStream {
@@ -14,8 +13,8 @@ public class ChunkInputStream extends InputStream {
     private final static int QUEUE_MAX_CAPACITY = 100*1024*1024;//100Mb
 
     private final Logger log = LogManager.getLogger();
-    private final FileInfo fileInfo;
     private final PriorityBlockingQueue<Chunk> queue = new PriorityBlockingQueue<>();
+    private final Chunk initialChunk;
 
     private long nextChunkIndex = 0;
     private byte[] buffer = null;
@@ -26,12 +25,12 @@ public class ChunkInputStream extends InputStream {
 
     ChunkInputStream(Chunk chunk) {
         super();
-        fileInfo = new FileInfo(chunk);
+        initialChunk = chunk;
     }
 
     @Override
     public int available() throws IOException {
-        return buffer.length + queue.size() * fileInfo.getChunkSize().intValue();
+        return buffer.length + queue.size() * initialChunk.getChunkSize().intValue();
     }
 
     @Override
@@ -39,15 +38,12 @@ public class ChunkInputStream extends InputStream {
         int b = getByteFromBuffer();
         if(b!=-1) return b;
 
-        if(currentChunk != null)
-            currentChunk.setProcessed(true);
-
         long availableChunkIndex = -1;
         while(availableChunkIndex!=nextChunkIndex){
             currentChunk = queue.peek();
             if(currentChunk == null && allChunksAccepted) return -1;//Stream is finished
             if(currentChunk != null)
-                availableChunkIndex = currentChunk.getDzChunkIndex().longValue();
+                availableChunkIndex = currentChunk.getChunkIndex().longValue();
             if(availableChunkIndex!=nextChunkIndex){
                 try {
                     log.warn("Queue peek timeout");
@@ -81,12 +77,12 @@ public class ChunkInputStream extends InputStream {
     void putChunk(Chunk chunk) {
 
         if(allChunksAccepted)
-            throw new IllegalStateException(String.format("Stream initialised for %1$s already accepted %2$s chunks and can not accept currentChunk %3$s", fileInfo, acceptedChunkCount, chunk));
+            throw new IllegalStateException(String.format("Stream initialised for %1$s already accepted %2$s chunks and can not accept currentChunk %3$s", initialChunk, acceptedChunkCount, chunk));
 
-        if(!chunk.getFileId().equals(fileInfo.getFileId()))
-            throw new IllegalArgumentException(String.format("Stream initialised for %1$s can not accept currentChunk %2$s", fileInfo, chunk));
+        if(!chunk.getFileId().equals(initialChunk.getFileId()))
+            throw new IllegalArgumentException(String.format("Stream initialised for %1$s can not accept currentChunk %2$s", initialChunk, chunk));
 
-        while((queue.size() + 1) * fileInfo.getChunkSize().intValue() > QUEUE_MAX_CAPACITY){
+        while((queue.size() + 1) * initialChunk.getChunkSize().intValue() > QUEUE_MAX_CAPACITY){
             try {
                 log.warn("Queue put timeout");
                 Thread.sleep(QUEUE_PUT_TIMEOUT);
@@ -96,47 +92,23 @@ public class ChunkInputStream extends InputStream {
         }
         queue.put(chunk);
         acceptedChunkCount++;
-        log.info(String.format("Received %1$.2f%% of %2$s", (double)acceptedChunkCount/chunk.getDzTotalChunkCount().longValue()*100, getFileName()));
-        if(acceptedChunkCount == fileInfo.getTotalChunkCount().longValue()){
+        log.info(String.format("Received %1$.2f%% of %2$s", (double)acceptedChunkCount/chunk.getTotalChunkCount().longValue()*100, getFileName()));
+        if(acceptedChunkCount == initialChunk.getTotalChunkCount().longValue()){
             allChunksAccepted = true;
             log.info("All chunks received");
         }
     }
 
     public String getFileName() {
-        return fileInfo.getFileName();
+        return initialChunk.getFileName();
+    }
+
+    public String getRequestFormField(String fieldName){
+        return initialChunk.getRequestFormField(fieldName);
     }
 
     String getFileId() {
-        return fileInfo.getFileId();
+        return initialChunk.getFileId();
     }
 
-    private class FileInfo {
-        private final Chunk chunk;
-
-        FileInfo(Chunk chunk) {
-            this.chunk = chunk;
-        }
-
-        String getFileId() {
-            return chunk.getFileId();
-        }
-
-        BigInteger getTotalChunkCount() {
-            return chunk.getDzTotalChunkCount();
-        }
-
-        BigInteger getChunkSize() {
-            return chunk.getDzChunkSize();
-        }
-
-        @Override
-        public String toString() {
-            return chunk.toString();
-        }
-
-        String getFileName() {
-            return chunk.getFileName();
-        }
-    }
 }

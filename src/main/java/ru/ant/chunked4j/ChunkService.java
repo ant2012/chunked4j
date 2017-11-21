@@ -28,10 +28,6 @@ public class ChunkService {
             Chunk chunk = new Chunk(request);
             ChunkInputStream stream = getStream(chunk);
             stream.putChunk(chunk);
-//            while (!chunk.isProcessed()){
-//                log.warn(String.format("Freezing request for %1$s", chunk));
-//                Thread.sleep(100);
-//            }
         } catch (Exception e) {
             throw new ChunkException(e);
         }
