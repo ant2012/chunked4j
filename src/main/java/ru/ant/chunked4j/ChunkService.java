@@ -56,7 +56,7 @@ public class ChunkService {
         listeners.add(listener);
     }
 
-    public <R extends ChunkStreamReader> void registerStreamReaderFactory(ChunkStreamReaderFactory<R> streamReaderFactory) {
+    public <S extends Serializable, R extends ChunkStreamReader<S>> void registerStreamReaderFactory(ChunkStreamReaderFactory<R> streamReaderFactory) {
         addStreamListener(new ChunkStreamListener<>(streamReaderFactory));
     }
 
