@@ -7,6 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.PriorityBlockingQueue;
 
+/**
+ * This {@link InputStream} extension collects incoming chunked requests<br/>
+ * sort them by chunkIndex and provide standard {@link InputStream} access to incoming data<br/>
+ * Streams always created internally in {@link ChunkService}<br/>
+ */
 public class ChunkInputStream extends InputStream {
     private final static int QUEUE_PEEK_TIMEOUT = 500;//ms
     private final static int QUEUE_PUT_TIMEOUT = 10;//ms
@@ -29,12 +34,12 @@ public class ChunkInputStream extends InputStream {
     }
 
     @Override
-    public int available() throws IOException {
+    public int available() {
         return buffer.length + queue.size() * initialChunk.getChunkSize().intValue();
     }
 
     @Override
-    public int read() throws IOException {
+    public int read() {
         int b = getByteFromBuffer();
         if(b!=-1) return b;
 
@@ -99,22 +104,45 @@ public class ChunkInputStream extends InputStream {
         }
     }
 
+    /**
+     * Part of initial chunk metadata
+     * @return file name
+     */
     public String getFileName() {
         return initialChunk.getFileName();
     }
 
+    /**
+     * Part of initial chunk metadata
+     * @return content type
+     */
     public String getContentType() {
         return initialChunk.getContentType();
     }
 
+    /**
+     * Part of initial chunk metadata
+     * @param fieldName form field name
+     * @return form field value
+     */
     public String getRequestFormField(String fieldName){
         return initialChunk.getRequestFormField(fieldName);
     }
 
+    /**
+     * Part of initial chunk metadata
+     * @param paramName query param name
+     * @return request query param value
+     */
     public String getRequestQueryParam(String paramName){
         return initialChunk.getRequestQueryParam(paramName);
     }
 
+    /**
+     * Part of initial chunk metadata
+     * @param attributeName request attribute name
+     * @return request attribute value
+     */
     public Object getRequestAttribute(String attributeName){
         return initialChunk.getRequestAttribute(attributeName);
     }

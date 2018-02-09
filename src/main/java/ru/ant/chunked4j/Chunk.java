@@ -18,6 +18,9 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Dropzone's data chunk implementation
+ */
 public class Chunk implements Comparable<Chunk> {
     private Logger log = LogManager.getLogger();
 
@@ -28,7 +31,6 @@ public class Chunk implements Comparable<Chunk> {
     private byte[] chunkData;
     private String fileName;
     private String contentType;
-    private boolean processed;
 
     private final Map<String, String> requestFormFields = new HashMap<>();
     private final Map<String, String[]> requestQueryParams;
@@ -72,19 +74,19 @@ public class Chunk implements Comparable<Chunk> {
         }
     }
 
-    public String getFileId() {
+    String getFileId() {
         return fileId;
     }
 
-    public BigInteger getChunkIndex() {
+    BigInteger getChunkIndex() {
         return chunkIndex;
     }
 
-    public BigInteger getChunkSize() {
+    BigInteger getChunkSize() {
         return chunkSize;
     }
 
-    public BigInteger getTotalChunkCount() {
+    BigInteger getTotalChunkCount() {
         return totalChunkCount;
     }
 
@@ -131,15 +133,15 @@ public class Chunk implements Comparable<Chunk> {
         }
     }
 
-    public String getRequestFormField(String fieldName){
+    String getRequestFormField(String fieldName){
         return requestFormFields.get(fieldName);
     }
 
-    public String getRequestQueryParam(String paramName){
+    String getRequestQueryParam(String paramName){
         return getRequestQueryParam(paramName, 0);
     }
 
-    public Object getRequestAttribute(String attributeName){
+    Object getRequestAttribute(String attributeName){
         return requestAttributes.get(attributeName);
     }
 

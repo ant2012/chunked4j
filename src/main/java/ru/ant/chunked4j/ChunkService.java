@@ -10,6 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Chunked service singleton<br/>
+ * Usage:<br/>
+ * register your factory on application start: ChunkService.{@link #getInstance()}.{@link #registerStreamReaderFactory(ChunkStreamReaderFactory)};<br/>
+ * when get chunked request use: chunkService.{@link #putChunk(HttpServletRequest)};
+ */
 public class ChunkService {
     private static ChunkService instance = new ChunkService();
     public static ChunkService getInstance() {
@@ -23,6 +29,12 @@ public class ChunkService {
     private Map<String, ChunkInputStream> streamMap = new HashMap<>();
     private List<ChunkStreamListener> listeners = new ArrayList<>();
 
+    /**
+     * Adds chunk request to chunked incoming stream<br/>
+     * If stream does not exist yet - it will be created
+     * @param request Your web server's http request
+     * @throws Exception any exception in chunk creation
+     */
     public void putChunk(HttpServletRequest request) throws Exception {
         Chunk chunk = new Chunk(request);
         ChunkInputStream stream = getStream(chunk);
@@ -51,10 +63,23 @@ public class ChunkService {
         listeners.add(listener);
     }
 
+    /**
+     * Register your factory as stream listener<br/>
+     * Multiple listener registrations are allowed
+     * @param streamReaderFactory user's factory implementing {@link ru.ant.chunked4j.ChunkStreamReaderFactory}
+     * @param <S> User's stream metadata class
+     * @param <R> User's stream reader implementation class
+     */
     public <S extends Serializable, R extends ChunkStreamReader<S>> void registerStreamReaderFactory(ChunkStreamReaderFactory<R> streamReaderFactory) {
         addStreamListener(new ChunkStreamListener<>(streamReaderFactory));
     }
 
+    /**
+     * Finds finished chunked incoming stream by fileId<br/>
+     * and returns it's metadata
+     * @param fileId id of incoming file
+     * @return Your metadata class instance or null, if no stream was found
+     */
     public Serializable getUploadResult(String fileId) {
         for (ChunkStreamListener listener : listeners) {
             Serializable result = listener.getUploadResult(fileId);

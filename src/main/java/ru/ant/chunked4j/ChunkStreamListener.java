@@ -4,7 +4,15 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChunkStreamListener<S extends Serializable, R extends ChunkStreamReader<S>, F extends ChunkStreamReaderFactory<R>> {
+/**
+ * It is package private class-wrapper for user's factory<br/>
+ * It wraps factory to be streams listener<br/>
+ * User's {@link ru.ant.chunked4j.ChunkStreamReaderFactory} implementation will receive new streams through this listener<br/>
+ * @param <S> User's stream metadata class
+ * @param <R> User's stream reader implementation class
+ * @param <F> User's factory implementation class
+ */
+class ChunkStreamListener<S extends Serializable, R extends ChunkStreamReader<S>, F extends ChunkStreamReaderFactory<R>> {
 
     private final F readerFactory;
     private final Map<String, R> readers = new HashMap<>();
