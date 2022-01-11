@@ -3,7 +3,6 @@ package ru.ant.chunked4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.PriorityBlockingQueue;
 
@@ -26,7 +25,6 @@ public class ChunkInputStream extends InputStream {
     private int bufferIndex = -1;
     private long acceptedChunkCount;
     private boolean allChunksAccepted;
-    private Chunk currentChunk;
 
     ChunkInputStream(Chunk chunk) {
         super();
@@ -44,6 +42,7 @@ public class ChunkInputStream extends InputStream {
         if(b!=-1) return b;
 
         long availableChunkIndex = -1;
+        Chunk currentChunk;
         while(availableChunkIndex!=nextChunkIndex){
             currentChunk = queue.peek();
             if(currentChunk == null && allChunksAccepted) return -1;//Stream is finished
@@ -52,6 +51,7 @@ public class ChunkInputStream extends InputStream {
             if(availableChunkIndex!=nextChunkIndex){
                 try {
                     log.debug("Queue peek timeout");
+                    //noinspection BusyWait
                     Thread.sleep(QUEUE_PEEK_TIMEOUT);
                 } catch (InterruptedException e) {
                     log.error(e);
@@ -59,6 +59,7 @@ public class ChunkInputStream extends InputStream {
             }
         }
         currentChunk = queue.poll();
+        //noinspection ConstantConditions
         buffer = currentChunk.getChunkData();
         nextChunkIndex++;
 
@@ -90,6 +91,7 @@ public class ChunkInputStream extends InputStream {
         while((queue.size() + 1) * initialChunk.getChunkSize().intValue() > QUEUE_MAX_CAPACITY){
             try {
                 log.debug("Queue put timeout");
+                //noinspection BusyWait
                 Thread.sleep(QUEUE_PUT_TIMEOUT);
             } catch (InterruptedException e) {
                 log.error(e);
